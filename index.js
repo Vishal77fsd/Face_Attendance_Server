@@ -95,10 +95,15 @@ app.post("/checkin", async (req, res) => {
     .detectSingleFace(img)
     .withFaceLandmarks()
     .withFaceDescriptor();
+  console.log(detections);
+
+  if (detections === undefined) {
+    console.log("Face Not Detected");
+    return res.send("Face Not Detected").status(200);
+  }
   // Load face matcher to find the matching face
   const faceMatcher = new faceapi.FaceMatcher(faces, 0.6);
   console.log(faceMatcher);
-
   const result = faceMatcher.findBestMatch(detections.descriptor);
   console.log(result);
 
@@ -138,6 +143,10 @@ app.post("/checkout", async (req, res) => {
     .withFaceLandmarks()
     .withFaceDescriptor();
 
+  if (detections === undefined) {
+    console.log("Face Not Detected");
+    return res.send("Face Not Detected").status(200);
+  }
   // Loading faces
   // const faces = await getDesc();
   // console.log("faces", faces);
@@ -170,7 +179,7 @@ app.post("/checkout", async (req, res) => {
   }
 
   employee.save();
-  res.send(result).status(200);
+  res.send("Employee Checkout successfully").status(200);
 });
 
 app.get("/employee/:id", async (req, res) => {
