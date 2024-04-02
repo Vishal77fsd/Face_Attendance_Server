@@ -12,7 +12,7 @@ const employeeSchema = new Schema(
     lastname: String,
     img: String,
     base64Img: String,
-    date: Array,
+    attendance: Array,
   },
   { timestamps: true }
 );
