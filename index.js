@@ -6,10 +6,12 @@ const bodyParser = require("body-parser");
 const md5 = require("md5");
 const base64Img = require("base64-img");
 const Employee = require("./Schema/EmployeeSchema");
+const Admin = require("./Schema/Admin");
 const connectDB = require("./DB/db");
 const path = require("path");
 const canvas = require("canvas");
 const faceapi = require("face-api.js");
+require("dotenv").config();
 let faces = null;
 
 const { Canvas, Image, ImageData } = canvas;
@@ -48,6 +50,18 @@ app.get("/", (req, res) => {
   res.send("hello world");
 });
 
+// handle login
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+  const result = await Admin.findOne({ email: email, password: password });
+
+  console.log(result);
+  if (result) {
+    return res.send(result).status(200);
+  } else {
+    return res.send("Admin Not Found").status(200);
+  }
+});
 function base64ToArrayBuffer(base64) {
   const myBuffer = Buffer.from(base64, "base64");
   return myBuffer;
@@ -78,7 +92,6 @@ app.post("/upload", async (req, res) => {
     const employee = await newEmployee.save();
     return res.send(employee.firstname).status(200);
   } else {
-    console.log("Face Not Detected");
     return res.send("Face Not Detected").status(200);
   }
 });
@@ -98,14 +111,11 @@ app.post("/checkin", async (req, res) => {
   console.log(detections);
 
   if (detections === undefined) {
-    console.log("Face Not Detected");
     return res.send("Face Not Detected").status(200);
   }
   // Load face matcher to find the matching face
   const faceMatcher = new faceapi.FaceMatcher(faces, 0.6);
-  console.log(faceMatcher);
   const result = faceMatcher.findBestMatch(detections.descriptor);
-  console.log(result);
 
   const employee = await Employee.findOne({ firstname: `${result._label}` });
 
@@ -198,7 +208,6 @@ app.put("/employee/update/:id", async (req, res) => {
     { _id: id },
     { firstname: firstName, middlename: middleName, lastname: lastName }
   );
-  console.log(employee);
   res.send("Employee Updated Successfully");
 });
 
@@ -248,10 +257,8 @@ app.get("/employees", async (req, res) => {
 
 // Delete Employee with id
 app.post("/employees/delete/:id", async (req, res) => {
-  console.log(req.params);
   const id = req.params.id;
   const result = await Employee.findOneAndDelete({ id: id });
-  console.log(result);
   res.send(result);
 });
 
