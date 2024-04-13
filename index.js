@@ -18,7 +18,7 @@ const { Canvas, Image, ImageData } = canvas;
 faceapi.env.monkeyPatch({ Canvas, Image, ImageData });
 
 connectDB();
-app.use(cors());
+app.use(cors({}));
 app.use(bodyParser.json());
 
 // Loading Models
@@ -37,8 +37,8 @@ Promise.all([
       .then((result) => {
         faces = result;
       })
-      .catch(() => {
-        console.log("Error");
+      .catch((err) => {
+        console.log("ABC", err);
       });
   });
 
@@ -72,7 +72,8 @@ app.post("/upload", async (req, res) => {
   const [first, middle, last] = name.split(" ");
   const date = md5(new Date());
 
-  const filepath = await base64Img.imgSync(img, "./uploads/", date);
+  const filepath = base64Img.imgSync(img, "./uploads/", date);
+  console.log(filepath);
   const imgage = await canvas.loadImage(filepath);
   const detections = await faceapi
     .detectSingleFace(imgage)
@@ -101,7 +102,7 @@ app.post("/checkin", async (req, res) => {
   const { imageSrc } = req.body;
   const date = md5(new Date());
 
-  const filepath = await base64Img.imgSync(imageSrc, "./checkin/", date);
+  const filepath = base64Img.imgSync(imageSrc, "./checkin/", date);
   // console.log(filepath);
   const img = await canvas.loadImage(filepath);
   const detections = await faceapi
@@ -113,6 +114,8 @@ app.post("/checkin", async (req, res) => {
   if (detections === undefined) {
     return res.send("Face Not Detected").status(200);
   }
+
+  console.log(faces);
   // Load face matcher to find the matching face
   const faceMatcher = new faceapi.FaceMatcher(faces, 0.6);
   const result = faceMatcher.findBestMatch(detections.descriptor);
@@ -213,7 +216,7 @@ app.put("/employee/update/:id", async (req, res) => {
 
 // Getting face descriptors from database
 const getDescriptorsFromDB = async (req, res) => {
-  console.log("GetDescriptorsFromDB");
+  console.log("before GetDescriptorsFromDB");
   // Getting all the employees
   const employees = await Employee.find({});
   return Promise.all(
@@ -222,6 +225,7 @@ const getDescriptorsFromDB = async (req, res) => {
       let descriptions = [];
       // FilePath Here
       const filepath = path.join(__dirname, "uploads");
+      console.log(filepath);
       // Getting person face from file
       const img = await canvas.loadImage(`${filepath}/${spread[1]}`);
       const detections = await faceapi
@@ -231,6 +235,7 @@ const getDescriptorsFromDB = async (req, res) => {
       // console.log(detections);
       descriptions.push(detections.descriptor);
 
+      console.log("After GetDescriptorsFromDB");
       // Returning all the descriptors with label in it
       return new faceapi.LabeledFaceDescriptors(
         employee.firstname,
