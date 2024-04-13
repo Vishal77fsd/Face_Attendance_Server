@@ -20,7 +20,10 @@ faceapi.env.monkeyPatch({ Canvas, Image, ImageData });
 connectDB();
 app.use(
   cors({
-    origin: ["https://face-attendance-ui.vercel.app/", "http://localhost:5173"],
+    origin: [
+      "https://face-attendance-ui.vercel.app/",
+      "https://localhost:5173",
+    ],
   })
 );
 app.use(bodyParser.json());
