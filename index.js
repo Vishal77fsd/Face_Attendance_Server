@@ -18,7 +18,11 @@ const { Canvas, Image, ImageData } = canvas;
 faceapi.env.monkeyPatch({ Canvas, Image, ImageData });
 
 connectDB();
-app.use(cors({}));
+app.use(
+  cors({
+    origin: ["https://face-attendance-ui.vercel.app/", "http://localhost:5173"],
+  })
+);
 app.use(bodyParser.json());
 
 // Loading Models
